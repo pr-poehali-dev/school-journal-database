@@ -1,0 +1,20 @@
+{
+  "tests": [
+    {
+      "name": "Login teacher",
+      "method": "POST",
+      "path": "/",
+      "body": {"login": "22", "password": "56887Qqq", "action": "login"},
+      "expectedStatus": 200,
+      "expectedBody": {"role": "teacher"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get all users",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    }
+  ]
+}
