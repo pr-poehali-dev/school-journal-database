@@ -67,8 +67,12 @@ def handler(event: dict, context) -> dict:
         if not login.startswith('22'):
             conn.close()
             return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'Логин должен начинаться с 22'})}
-        cur.execute("INSERT INTO users (login, password_hash, role, full_name) VALUES (%s,%s,%s,%s) RETURNING id", (login, password, role, full_name))
-        user_id = cur.fetchone()[0]
+        try:
+            cur.execute("INSERT INTO users (login, password_hash, role, full_name) VALUES (%s,%s,%s,%s) RETURNING id", (login, password, role, full_name))
+            user_id = cur.fetchone()[0]
+        except Exception:
+            conn.close()
+            return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'Логин уже занят. Выберите другой логин.'})}
         if class_id and role == 'student':
             cur.execute("INSERT INTO class_students (class_id, student_id) VALUES (%s,%s) ON CONFLICT DO NOTHING", (class_id, user_id))
         conn.commit()
