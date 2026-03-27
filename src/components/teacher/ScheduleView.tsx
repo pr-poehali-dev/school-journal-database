@@ -14,6 +14,7 @@ interface ScheduleItem {
   start_time: string;
   end_time: string;
   lesson_topic: string;
+  homework: string;
 }
 
 interface ClassItem { id: number; name: string; }
@@ -30,7 +31,7 @@ export default function ScheduleView() {
   const [showModal, setShowModal] = useState(false);
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [editing, setEditing] = useState<ScheduleItem | null>(null);
-  const [form, setForm] = useState({ subject_id: '', day_of_week: '1', lesson_number: '1', start_time: '', end_time: '', lesson_topic: '' });
+  const [form, setForm] = useState({ subject_id: '', day_of_week: '1', lesson_number: '1', start_time: '', end_time: '', lesson_topic: '', homework: '' });
   const [newSubjectName, setNewSubjectName] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -52,19 +53,19 @@ export default function ScheduleView() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ subject_id: subjects[0]?.id ? String(subjects[0].id) : '', day_of_week: '1', lesson_number: '1', start_time: '', end_time: '', lesson_topic: '' });
+    setForm({ subject_id: subjects[0]?.id ? String(subjects[0].id) : '', day_of_week: '1', lesson_number: '1', start_time: '', end_time: '', lesson_topic: '', homework: '' });
     setShowModal(true);
   };
 
   const openEdit = (s: ScheduleItem) => {
     setEditing(s);
-    setForm({ subject_id: String(s.subject_id), day_of_week: String(s.day_of_week), lesson_number: String(s.lesson_number), start_time: s.start_time || '', end_time: s.end_time || '', lesson_topic: s.lesson_topic || '' });
+    setForm({ subject_id: String(s.subject_id), day_of_week: String(s.day_of_week), lesson_number: String(s.lesson_number), start_time: s.start_time || '', end_time: s.end_time || '', lesson_topic: s.lesson_topic || '', homework: s.homework || '' });
     setShowModal(true);
   };
 
   const handleSave = async () => {
     setSaving(true);
-    const data = { class_id: selectedClass, subject_id: Number(form.subject_id), day_of_week: Number(form.day_of_week), lesson_number: Number(form.lesson_number), start_time: form.start_time, end_time: form.end_time, lesson_topic: form.lesson_topic };
+    const data = { class_id: selectedClass, subject_id: Number(form.subject_id), day_of_week: Number(form.day_of_week), lesson_number: Number(form.lesson_number), start_time: form.start_time, end_time: form.end_time, lesson_topic: form.lesson_topic, homework: form.homework };
     if (editing) {
       await api.updateSchedule({ ...data, id: editing.id });
     } else {
@@ -161,6 +162,12 @@ export default function ScheduleView() {
                       {lesson.start_time && (
                         <p className="text-xs text-[#aaa] mt-0.5">{lesson.start_time}{lesson.end_time ? ` — ${lesson.end_time}` : ''}</p>
                       )}
+                      {lesson.homework && (
+                        <p className="text-xs text-amber-600 mt-0.5 flex items-center gap-1">
+                          <Icon name="BookOpen" size={11} />
+                          ДЗ: {lesson.homework}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       <button onClick={() => openEdit(lesson)} className="p-1.5 text-[#888] hover:text-[#1a1a1a] hover:bg-[#f0f0f0] rounded-lg transition-colors">
@@ -224,6 +231,13 @@ export default function ScheduleView() {
             <input value={form.lesson_topic} onChange={e => setForm(f => ({...f, lesson_topic: e.target.value}))}
               className="w-full border border-[#e0e0e0] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1a1a1a]"
               placeholder="Например: Квадратные уравнения" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#555] mb-2 uppercase tracking-wide">Домашнее задание</label>
+            <textarea value={form.homework} onChange={e => setForm(f => ({...f, homework: e.target.value}))}
+              className="w-full border border-[#e0e0e0] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1a1a1a] resize-none"
+              rows={3}
+              placeholder="Что задано на дом..." />
           </div>
           <div className="flex gap-2 justify-end">
             <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-[#555] hover:bg-[#f5f5f5] rounded-lg transition-colors">Отмена</button>

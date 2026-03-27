@@ -17,6 +17,7 @@ interface ScheduleItem {
   start_time: string;
   end_time: string;
   lesson_topic: string;
+  homework: string;
 }
 
 interface Grade {
@@ -51,6 +52,7 @@ export default function StudentDashboard({ user, onLogout }: Props) {
   const [grades, setGrades] = useState<Grade[]>([]);
   const [averages, setAverages] = useState<Record<number, Avg>>({});
   const [loading, setLoading] = useState(true);
+  const [hwLesson, setHwLesson] = useState<ScheduleItem | null>(null);
 
   useEffect(() => {
     const loadAll = async () => {
@@ -137,6 +139,15 @@ export default function StudentDashboard({ user, onLogout }: Props) {
                         <p className="text-xs text-[#aaa] mt-0.5">{lesson.start_time}{lesson.end_time ? ` — ${lesson.end_time}` : ''}</p>
                       )}
                     </div>
+                    {lesson.homework && (
+                      <button
+                        onClick={() => setHwLesson(lesson)}
+                        className="ml-3 flex items-center gap-1.5 px-2.5 py-1.5 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-xs font-medium hover:bg-amber-100 transition-colors flex-shrink-0"
+                      >
+                        <Icon name="BookOpen" size={13} />
+                        ДЗ
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -166,7 +177,7 @@ export default function StudentDashboard({ user, onLogout }: Props) {
                     <div className="flex flex-wrap gap-2">
                       {subjectGrades.map(g => (
                         <div key={g.id} className="group relative">
-                          <span className={`inline-block text-sm font-semibold px-3 py-1.5 rounded-lg ${GRADE_COLORS[g.grade]}`}>
+                          <span className={`inline-block text-sm font-semibold px-3 py-1.5 rounded-lg cursor-default ${GRADE_COLORS[g.grade]}`}>
                             {g.grade}
                           </span>
                           {(g.note || g.grade_date) && (
@@ -187,6 +198,30 @@ export default function StudentDashboard({ user, onLogout }: Props) {
           </div>
         )}
       </main>
+
+      {/* Homework popup */}
+      {hwLesson && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setHwLesson(null)}>
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl" onClick={e => e.stopPropagation()}>
+            <div className="px-6 py-5 border-b border-[#f0f0f0] flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-[#1a1a1a]">{hwLesson.subject_name}</p>
+                {hwLesson.lesson_topic && <p className="text-xs text-[#888] mt-0.5">{hwLesson.lesson_topic}</p>}
+              </div>
+              <button onClick={() => setHwLesson(null)} className="p-1.5 text-[#888] hover:text-[#1a1a1a] hover:bg-[#f5f5f5] rounded-lg transition-colors">
+                <Icon name="X" size={18} />
+              </button>
+            </div>
+            <div className="px-6 py-5">
+              <p className="text-xs font-medium text-amber-600 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <Icon name="BookOpen" size={13} />
+                Домашнее задание
+              </p>
+              <p className="text-sm text-[#1a1a1a] leading-relaxed">{hwLesson.homework}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

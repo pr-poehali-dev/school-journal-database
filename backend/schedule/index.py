@@ -32,7 +32,7 @@ def handler(event: dict, context) -> dict:
         if student_id:
             cur.execute("""
                 SELECT sc.id, sc.class_id, sc.subject_id, s.name as subject_name,
-                       sc.day_of_week, sc.lesson_number, sc.start_time, sc.end_time, sc.lesson_topic
+                       sc.day_of_week, sc.lesson_number, sc.start_time, sc.end_time, sc.lesson_topic, sc.homework
                 FROM schedule sc
                 JOIN subjects s ON sc.subject_id = s.id
                 JOIN class_students cs ON cs.class_id = sc.class_id
@@ -42,7 +42,7 @@ def handler(event: dict, context) -> dict:
         elif class_id:
             cur.execute("""
                 SELECT sc.id, sc.class_id, sc.subject_id, s.name as subject_name,
-                       sc.day_of_week, sc.lesson_number, sc.start_time, sc.end_time, sc.lesson_topic
+                       sc.day_of_week, sc.lesson_number, sc.start_time, sc.end_time, sc.lesson_topic, sc.homework
                 FROM schedule sc
                 JOIN subjects s ON sc.subject_id = s.id
                 WHERE sc.class_id = %s
@@ -51,7 +51,7 @@ def handler(event: dict, context) -> dict:
         else:
             cur.execute("""
                 SELECT sc.id, sc.class_id, sc.subject_id, s.name as subject_name,
-                       sc.day_of_week, sc.lesson_number, sc.start_time, sc.end_time, sc.lesson_topic
+                       sc.day_of_week, sc.lesson_number, sc.start_time, sc.end_time, sc.lesson_topic, sc.homework
                 FROM schedule sc
                 JOIN subjects s ON sc.subject_id = s.id
                 ORDER BY sc.day_of_week, sc.lesson_number
@@ -67,7 +67,7 @@ def handler(event: dict, context) -> dict:
                 'subject_name': r[3], 'day_of_week': r[4],
                 'day_name': DAYS[r[4]-1] if 1 <= r[4] <= 7 else '',
                 'lesson_number': r[5], 'start_time': r[6], 'end_time': r[7],
-                'lesson_topic': r[8] or ''
+                'lesson_topic': r[8] or '', 'homework': r[9] or ''
             } for r in rows])
         }
 
@@ -79,14 +79,15 @@ def handler(event: dict, context) -> dict:
         start_time = body.get('start_time', '')
         end_time = body.get('end_time', '')
         lesson_topic = body.get('lesson_topic', '')
+        homework = body.get('homework', '')
 
         if not all([class_id, subject_id, day_of_week, lesson_number]):
             conn.close()
             return {'statusCode': 400, 'headers': HEADERS, 'body': json.dumps({'error': 'Заполните все поля'})}
 
         cur.execute(
-            "INSERT INTO schedule (class_id, subject_id, day_of_week, lesson_number, start_time, end_time, lesson_topic) VALUES (%s,%s,%s,%s,%s,%s,%s) RETURNING id",
-            (class_id, subject_id, day_of_week, lesson_number, start_time, end_time, lesson_topic)
+            "INSERT INTO schedule (class_id, subject_id, day_of_week, lesson_number, start_time, end_time, lesson_topic, homework) VALUES (%s,%s,%s,%s,%s,%s,%s,%s) RETURNING id",
+            (class_id, subject_id, day_of_week, lesson_number, start_time, end_time, lesson_topic, homework)
         )
         schedule_id = cur.fetchone()[0]
         conn.commit()
@@ -101,9 +102,10 @@ def handler(event: dict, context) -> dict:
         start_time = body.get('start_time', '')
         end_time = body.get('end_time', '')
         lesson_topic = body.get('lesson_topic', '')
+        homework = body.get('homework', '')
         cur.execute(
-            "UPDATE schedule SET subject_id=%s, day_of_week=%s, lesson_number=%s, start_time=%s, end_time=%s, lesson_topic=%s WHERE id=%s",
-            (subject_id, day_of_week, lesson_number, start_time, end_time, lesson_topic, schedule_id)
+            "UPDATE schedule SET subject_id=%s, day_of_week=%s, lesson_number=%s, start_time=%s, end_time=%s, lesson_topic=%s, homework=%s WHERE id=%s",
+            (subject_id, day_of_week, lesson_number, start_time, end_time, lesson_topic, homework, schedule_id)
         )
         conn.commit()
         conn.close()
