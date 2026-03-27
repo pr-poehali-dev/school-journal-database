@@ -13,6 +13,7 @@ interface ScheduleItem {
   lesson_number: number;
   start_time: string;
   end_time: string;
+  lesson_topic: string;
 }
 
 interface ClassItem { id: number; name: string; }
@@ -29,7 +30,7 @@ export default function ScheduleView() {
   const [showModal, setShowModal] = useState(false);
   const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [editing, setEditing] = useState<ScheduleItem | null>(null);
-  const [form, setForm] = useState({ subject_id: '', day_of_week: '1', lesson_number: '1', start_time: '', end_time: '' });
+  const [form, setForm] = useState({ subject_id: '', day_of_week: '1', lesson_number: '1', start_time: '', end_time: '', lesson_topic: '' });
   const [newSubjectName, setNewSubjectName] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -51,19 +52,19 @@ export default function ScheduleView() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ subject_id: subjects[0]?.id ? String(subjects[0].id) : '', day_of_week: '1', lesson_number: '1', start_time: '', end_time: '' });
+    setForm({ subject_id: subjects[0]?.id ? String(subjects[0].id) : '', day_of_week: '1', lesson_number: '1', start_time: '', end_time: '', lesson_topic: '' });
     setShowModal(true);
   };
 
   const openEdit = (s: ScheduleItem) => {
     setEditing(s);
-    setForm({ subject_id: String(s.subject_id), day_of_week: String(s.day_of_week), lesson_number: String(s.lesson_number), start_time: s.start_time || '', end_time: s.end_time || '' });
+    setForm({ subject_id: String(s.subject_id), day_of_week: String(s.day_of_week), lesson_number: String(s.lesson_number), start_time: s.start_time || '', end_time: s.end_time || '', lesson_topic: s.lesson_topic || '' });
     setShowModal(true);
   };
 
   const handleSave = async () => {
     setSaving(true);
-    const data = { class_id: selectedClass, subject_id: Number(form.subject_id), day_of_week: Number(form.day_of_week), lesson_number: Number(form.lesson_number), start_time: form.start_time, end_time: form.end_time };
+    const data = { class_id: selectedClass, subject_id: Number(form.subject_id), day_of_week: Number(form.day_of_week), lesson_number: Number(form.lesson_number), start_time: form.start_time, end_time: form.end_time, lesson_topic: form.lesson_topic };
     if (editing) {
       await api.updateSchedule({ ...data, id: editing.id });
     } else {
@@ -154,8 +155,11 @@ export default function ScheduleView() {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-[#1a1a1a]">{lesson.subject_name}</p>
+                      {lesson.lesson_topic && (
+                        <p className="text-xs text-[#555] mt-0.5">{lesson.lesson_topic}</p>
+                      )}
                       {lesson.start_time && (
-                        <p className="text-xs text-[#888]">{lesson.start_time}{lesson.end_time ? ` — ${lesson.end_time}` : ''}</p>
+                        <p className="text-xs text-[#aaa] mt-0.5">{lesson.start_time}{lesson.end_time ? ` — ${lesson.end_time}` : ''}</p>
                       )}
                     </div>
                     <div className="flex items-center gap-1">
@@ -214,6 +218,12 @@ export default function ScheduleView() {
               <input type="time" value={form.end_time} onChange={e => setForm(f => ({...f, end_time: e.target.value}))}
                 className="w-full border border-[#e0e0e0] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1a1a1a]" />
             </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#555] mb-2 uppercase tracking-wide">Тема урока</label>
+            <input value={form.lesson_topic} onChange={e => setForm(f => ({...f, lesson_topic: e.target.value}))}
+              className="w-full border border-[#e0e0e0] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#1a1a1a]"
+              placeholder="Например: Квадратные уравнения" />
           </div>
           <div className="flex gap-2 justify-end">
             <button onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-[#555] hover:bg-[#f5f5f5] rounded-lg transition-colors">Отмена</button>

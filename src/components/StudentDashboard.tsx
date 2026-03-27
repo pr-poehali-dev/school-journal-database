@@ -16,6 +16,7 @@ interface ScheduleItem {
   lesson_number: number;
   start_time: string;
   end_time: string;
+  lesson_topic: string;
 }
 
 interface Grade {
@@ -129,8 +130,11 @@ export default function StudentDashboard({ user, onLogout }: Props) {
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium text-[#1a1a1a]">{lesson.subject_name}</p>
+                      {lesson.lesson_topic && (
+                        <p className="text-xs text-[#555] mt-0.5">{lesson.lesson_topic}</p>
+                      )}
                       {lesson.start_time && (
-                        <p className="text-xs text-[#888]">{lesson.start_time}{lesson.end_time ? ` — ${lesson.end_time}` : ''}</p>
+                        <p className="text-xs text-[#aaa] mt-0.5">{lesson.start_time}{lesson.end_time ? ` — ${lesson.end_time}` : ''}</p>
                       )}
                     </div>
                   </div>
